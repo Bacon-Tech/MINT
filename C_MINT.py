@@ -40,6 +40,7 @@ class MintApp(tk.Frame):
         self.valid_filename = ""
         self.current_keyword = ""
         self.compare_recent_keyword = ""
+        self.text_is_edited = False
         #~~~~~~~~~~~~~~~~~~~< USE TO open all files in Directory >~~~~~~
         with open("{}{}".format(self.path, "list_of_all_filenames"), "r") as listall:
             self.list_of_all_filenames = json.load(listall)
@@ -122,6 +123,7 @@ class MintApp(tk.Frame):
         self.status_frame.rowconfigure(0, weight = 0)
         
         self.root.text = tk.Text(self.text_frame, undo = True)
+        self.root.text.bind('<Key>', self.is_text_edited)
         self.root.text.grid(row = 0, column = 0,columnspan = 1,
                             rowspan = 1, padx = 0, pady = 0, sticky = 'nsew')
         
@@ -178,6 +180,10 @@ class MintApp(tk.Frame):
         self.status_clock()
         self.root.protocol("WM_DELETE_WINDOW", self.close_program)
     
+    def is_text_edited(self,*args):
+        if self.text_is_edited == False:
+            self.text_is_edited = True
+            
     def open_files_in_path(self, path):
         for filename in listdir(path):
             with open("{}{}".format(path, filename), "r") as f:
@@ -276,7 +282,6 @@ class MintApp(tk.Frame):
             print("In the list to pass")
             
     def update_kw_entry_and_textbox(self, i):
-        
         self.keyword_entry.delete(0, tk.END)
         self.keyword_entry.insert(0, i)
         self.kw_entry()
@@ -410,14 +415,17 @@ class MintApp(tk.Frame):
             print("Already editing current keyword")
             self.compare_recent_keyword = e1_current
         else:
-            if self.root.text.compare("end-1c", "==", "1.0"):
+            if self.root.text.edit_modified() == False:
+            # if self.root.text.compare("end-1c", "==", "1.0"):
                 self.update_text_box(e1_current)
                 self.compare_recent_keyword = e1_current
+                self.root.text.edit_modified(False)
             else:
                 answer = messagebox.askquestion("Changing Notes!",
                     "Are you sure you want change the current Notes section to {}? Any unsaved changed will be lost!".format(e1_current))
                 if answer == "yes":
                     self.update_text_box(e1_current)
+                    
                 else:
                     print("pass")
     
