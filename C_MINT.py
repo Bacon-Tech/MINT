@@ -1,12 +1,15 @@
+import os
 import json
+import webbrowser
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import simpledialog
 from os import listdir
 from time import strftime
 import tkinter.messagebox
+from tkinter import messagebox
+from tkinter import simpledialog
 from string import ascii_letters, digits
 from MINT.myscrollbar import MyScrollbar #customer scroll bar
+
 
 class MintApp(tk.Frame):
     
@@ -42,8 +45,7 @@ class MintApp(tk.Frame):
         self.compare_recent_keyword = ""
         self.text_is_edited = False
         #~~~~~~~~~~~~~~~~~~~< USE TO open all files in Directory >~~~~~~
-        with open("{}{}".format(self.path, "list_of_all_filenames"), "r") as listall:
-            self.list_of_all_filenames = json.load(listall)
+        self.loaf()
 
         self.open_files_in_path(self.path)
         self.open_files_in_path_compare(self.path)
@@ -105,13 +107,13 @@ class MintApp(tk.Frame):
         self.root.text_side_left = tk.Text(self.kw_list_frame,
                                            width = 10, height = 20)
         
-        #self.root.text_side_left.place( x = 5, y = 5)
-        self.root.text_side_left.config(wrap = 'none')
-        self.root.text_side_right = tk.Text(self.kw_list_frame,
-                                            width = 10, height = 20)
-        
-        #self.root.text_side_right.place( x = 95, y = 5)
-        self.root.text_side_right.config(wrap = 'none')
+#         self.root.text_side_left.place( x = 5, y = 5)
+#         self.root.text_side_left.config(wrap = 'none')
+#         self.root.text_side_right = tk.Text(self.kw_list_frame,
+#                                             width = 10, height = 20)
+#         
+#         self.root.text_side_right.place( x = 95, y = 5)
+#         self.root.text_side_right.config(wrap = 'none')
         
         self.status_frame = tk.Frame(root)
         self.status_frame.config(bg = self.py_frame_color)
@@ -180,6 +182,10 @@ class MintApp(tk.Frame):
         self.status_clock()
         self.root.protocol("WM_DELETE_WINDOW", self.close_program)
     
+    def loaf(self):
+        with open("{}{}".format(self.path, "list_of_all_filenames"), "r") as listall:
+            self.list_of_all_filenames = json.load(listall)
+    
     def is_text_edited(self,*args):
         if self.text_is_edited == False:
             self.text_is_edited = True
@@ -208,7 +214,7 @@ class MintApp(tk.Frame):
             if self.valid_filename not in self.list_of_all_filenames:
                 self.create_notes_and_keys(self.valid_filename)
                 self.list_of_all_filenames.append(self.valid_filename)
-                with open("%s%s"%(self.path, "list_of_all_filenames"), "r+" ) as f:
+                with open("{}{}".format(self.path, "list_of_all_filenames"), "w" ) as f:
                         json.dump(self.list_of_all_filenames, f, indent = "")
                 self.library_menu()
             else:
@@ -227,60 +233,64 @@ class MintApp(tk.Frame):
             json.dump(n_base, new_n, indent = "")
         with open("%s%s" % (self.path,k_name), "w") as new_k:
             json.dump(k_base, new_k, indent = "")
-        self.open_files_in_path(self.path, self.notebook, "list_of_all_filenames")
+        self.open_files_in_path(self.path)
     #~~~~~~~~~~~~~~~~~~~< UPDATE keyword display >~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def update_kw_display(self, **kwargs):
-        list_to_pass = ["chose a library",
-                        " chose a library_keys",
-                        "chose a library_notes",
-                        ""]
-        
-        tbc = self.text_bg_color
-        tc = self.txt_color
-        
-        if kwargs is not None:
-            for key, value in kwargs.items():
-                if key == 'tbc':
-                    tbc = value
-                elif key == 'tc':
-                    tc = value
-     
-        if self.current_working_keys not in list_to_pass:
-            keys_to_be_updated = self.notebook[self.current_working_keys]
-            self.root.text_side_left.delete(1.0, "end-1c")
-            self.root.text_side_right.delete(1.0, "end-1c")
-            self.sub_kw_list_frame.destroy()
-            self.sub_kw_list_frame = tk.Frame(self.kw_list_frame, background = tbc,
-                                              borderwidth = 0, highlightthickness = 0)
-            self.sub_kw_list_frame.grid(row = 0, column = 0, sticky = 'ns')
-            countr = 0
-            r = 0
-            c = 0
-            for item in keys_to_be_updated:
-                if countr < 2:
-                    key_button = tk.Button(self.sub_kw_list_frame, text = item, fg = tc, bg = tbc,
-                                           command = lambda i = item: self.update_kw_entry_and_textbox(i))
-                    key_button.grid(row = r, column = c, sticky = 'nsew')
-                    if c == 0:
-                        c = 1
-                        countr += 1
-                    else:
-                        c = 0
-                        r += 1
-                        countr += 1   
-                else:
-                    key_button = tk.Button(self.sub_kw_list_frame, text = item, fg = tc, bg = tbc,
-                                           command = lambda i = item: self.update_kw_entry_and_textbox(i))
-                    key_button.grid(row = r, column = c, sticky = 'nsew')
-                    if c == 0:
-                        c = 1
-                    else:
-                        c = 0
-                        r += 1
-                        countr = 0
+        status = self.lock_unlock_libs()
+        if status == "locked":
+            print(status)
         else:
-            print("In the list to pass")
+            list_to_pass = ["chose a library",
+                            " chose a library_keys",
+                            "chose a library_notes",
+                            ""]
             
+            tbc = self.text_bg_color
+            tc = self.txt_color
+            
+            if kwargs is not None:
+                for key, value in kwargs.items():
+                    if key == 'tbc':
+                        tbc = value
+                    elif key == 'tc':
+                        tc = value
+         
+            if self.current_working_keys not in list_to_pass:
+                keys_to_be_updated = self.notebook[self.current_working_keys]
+    #             self.root.text_side_left.delete(1.0, "end-1c")
+    #             self.root.text_side_right.delete(1.0, "end-1c")
+                self.sub_kw_list_frame.destroy()
+                self.sub_kw_list_frame = tk.Frame(self.kw_list_frame, background = tbc,
+                                                  borderwidth = 0, highlightthickness = 0)
+                self.sub_kw_list_frame.grid(row = 0, column = 0, sticky = 'ns')
+                countr = 0
+                r = 0
+                c = 0
+                for item in keys_to_be_updated:
+                    if countr < 2:
+                        key_button = tk.Button(self.sub_kw_list_frame, text = item, fg = tc, bg = tbc,
+                                               command = lambda i = item: self.update_kw_entry_and_textbox(i))
+                        key_button.grid(row = r, column = c, sticky = 'nsew')
+                        if c == 0:
+                            c = 1
+                            countr += 1
+                        else:
+                            c = 0
+                            r += 1
+                            countr += 1   
+                    else:
+                        key_button = tk.Button(self.sub_kw_list_frame, text = item, fg = tc, bg = tbc,
+                                               command = lambda i = item: self.update_kw_entry_and_textbox(i))
+                        key_button.grid(row = r, column = c, sticky = 'nsew')
+                        if c == 0:
+                            c = 1
+                        else:
+                            c = 0
+                            r += 1
+                            countr = 0
+            else:
+                print("In the list to pass")
+
     def update_kw_entry_and_textbox(self, i):
         self.keyword_entry.delete(0, tk.END)
         self.keyword_entry.insert(0, i)
@@ -309,7 +319,7 @@ class MintApp(tk.Frame):
 #                     contr = 0
 #         else:
 #             print("In the list to pass")
-    #~~~~~~~~~~~~~~~~~~~< Search for words and highlight >~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~< Lock/Unlock Library >~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def search_textbox(self, event = None):
         self.root.text.tag_delete("search")
         self.root.text.tag_configure("search", background="green")
@@ -349,34 +359,110 @@ class MintApp(tk.Frame):
             self.root.text.mark_set("insert", prev_match[0])
             self.root.text.see("insert")
         return "break"
+    #~~~~~~~~~~~~~~~~~~~< Search for words and highlight >~~~~~~~~~~~~~~~~~~~~~~~~
+    def check_edit_lock_status(self):
+        with open("./NotesKeys/locked_libraries","r") as f:
+            locker = json.load(f)
+        count = len(locker)
+        counter = 0
+        for key in locker:
+            if self.current_working_lib == key:
+                values = locker[key]
+                if values[0] == "yes":
+                    answer = messagebox.askquestion("MINT Lock Manager", "This library is currently locked. Would you like to unlock now?")
+                    if answer == "yes":
+                        self.unlock_attempt(locker)     
+                else:
+                    answer2 = messagebox.askquestion("MINT Lock Manager", "This library is currently unlocked. Would you like to lock it now?")
+                    if answer2 == "yes":
+                        self.lock_attempt(locker)
+            else:
+                counter += 1
+                if counter == count:
+                    answer = messagebox.askquestion("MINT Lock Manager", "No password exist. Would you like to create one now?")
+                    if answer == "yes":
+                        prep_locker = locker
+                        new_pass = simpledialog.askstring("Enter in new password.", "case sensitive.")
+                        prep_locker[self.current_working_lib] = ["yes", new_pass]
+                        with open("./NotesKeys/locked_libraries","w") as f:
+                                json.dump(prep_locker, f, indent = "")
+                        break
+ 
     #~~~~~~~~~~~~~~~~~~~< UPDATE selected_notes! >~~~~~~~~~~~~~~~~~~~
     def lock_unlock_libs(self):
         with open("./NotesKeys/locked_libraries","r+") as f:
             ll = json.load(f)
+            
         if self.current_working_lib in ll:
             working_list = ll[self.current_working_lib]
             if working_list[0] == "yes":
                 lock_unlock = messagebox.askquestion("MINT Lock Manager", "This library is locked for editing. Do you want to unlock this library?")
                 if lock_unlock =="yes":
-                    count = 0
-                    while count < 3:
-                        pass_attempt = simpledialog.askstring("MINT Lock Manager", "What is the password for this library?")
-                        if pass_attempt == working_list[1]:
-                            working_list[0]= "no"
-                            with open("./NotesKeys/locked_libraries","r+") as f:
-                                json.dump(ll, f, indent = "")
-                            count = 3
-                        else:
-                            count += 1
-                else:
+                    answer = self.unlock_attempt(ll)
+                    print(answer)
+                    return answer
+        else:
+            print("unlocked")
+            return "unlocked"
+                
+    def unlock_attempt(self, ll):
+        working_list = ll[self.current_working_lib]
+        count = 0
+        while count < 3:
+            pass_attempt = simpledialog.askstring("MINT Lock Manager", "What is the password for this library?")
+            if pass_attempt == working_list[1]:
+                working_list[0]= "no"
+                with open("./NotesKeys/locked_libraries","w") as f:
+                    json.dump(ll, f, indent = "")
+                return "unlocked"
+            else:
+                count += 1
+                if count == 3:
                     return "locked"
+        
+    def lock_attempt(self, ll):
+        working_list = ll[self.current_working_lib]
+        pass_attempt = simpledialog.askstring("MINT Lock Manager", "What is the new password for this library?")
+        working_list[1] =pass_attempt
+        working_list[0]= "yes"
+        with open("./NotesKeys/locked_libraries","w") as f:
+            json.dump(ll, f, indent = "")
+            
+    def delete_lib(self):
+        answer = simpledialog.askstring("LIBRARY DELETION!", "Please type in the name of the library you wish to delete.")
+        valid_chars = "-_.() {}{}".format(ascii_letters, digits)
+        valid_filename = ("".join(c for c in answer if c in valid_chars)).replace(" ", "_").lower()
+        if valid_filename != "":
+            if valid_filename not in self.list_of_all_filenames:
+                print("No library exist by the name of {}.".format(answer))
+            else:
+                answer2 = messagebox.askquestion("LIBRARY DELETION!", "Are you sure you want to delete the {} library? This cannot be undone!".format(valid_filename))
+                if answer2 == "yes":
+                    print("Need to add an administrator bypass for library deletions")
+                    if os.path.exists("{}{}{}".format(self.path, valid_filename,"_notes")):
+                        os.remove("{}{}{}".format(self.path, valid_filename,"_notes"))
+                    if os.path.exists("{}{}{}".format(self.path, valid_filename,"_keys")):
+                        os.remove("{}{}{}".format(self.path, valid_filename,"_keys"))
+                        
+                    with open("{}{}".format(self.path,"list_of_all_filenames", "r")) as f:
+                        list_edits = json.load(f)
+                        
+                    if valid_filename in list_edits:
+                        list_edits.remove(valid_filename)
+                        print(list_edits)
+                        
+                    with open("{}{}".format(self.path,"list_of_all_filenames"), "w") as ff:    
+                        json.dump(list_edits, ff, indent = "")
+                    self.lib_menu.delete(valid_filename)
+                    self.loaf()
+                                
                         
     def append_notes(self):
         check_lock = self.lock_unlock_libs()
-        print(check_lock)
         if check_lock == "locked":
-            print(check_lock)            
+            print(check_lock)
         else:
+            print(check_lock)
             e1_current = self.keyword_entry.get().lower()
             e1_all_case = self.keyword_entry.get()
             e2_current = self.root.text.get(1.0, "end-1c")
@@ -425,6 +511,7 @@ class MintApp(tk.Frame):
                     "Are you sure you want change the current Notes section to {}? Any unsaved changed will be lost!".format(e1_current))
                 if answer == "yes":
                     self.update_text_box(e1_current)
+                    self.root.text.edit_modified(False)
                     
                 else:
                     print("pass")
@@ -461,8 +548,8 @@ class MintApp(tk.Frame):
         self.bg_lable.image = themebg_image
         self.root.config(bg = main_bg)
         self.root.text.config(bg = text_bg, fg = txt_color)
-        self.root.text_side_left.config(bg = text_bg, fg = txt_color)
-        self.root.text_side_right.config(bg = text_bg, fg = txt_color)
+#         self.root.text_side_left.config(bg = text_bg, fg = txt_color)
+#         self.root.text_side_right.config(bg = text_bg, fg = txt_color)
         self.search_entry.config(fg = txt_color, bg = text_bg)
         self.keyword_entry.config(fg = txt_color, bg = text_bg)
         self.status_frame.config(bg = text_bg)
@@ -536,28 +623,21 @@ class MintApp(tk.Frame):
         self.file_menu = tk.Menu(self.menu, tearoff = 0)
         self.menu.add_cascade(label = "File", menu = self.file_menu)
         self.file_menu.add_command(label = "Save", command = self.do_nothing)
-        self.file_menu.add_command(label = "Save As", command = self.do_nothing)
         self.file_menu.add_separator()
         self.file_menu.add_command(label = "Exit",
                                    command = lambda: self.close_program())
         
-        self.lib_menu = tk.Menu(self.menu)
+        self.lib_menu = tk.Menu(self.menu, tearoff = 0)
         self.menu.add_cascade(label = "Note Libraries", menu = self.lib_menu)
-        self.lib_menu.add_command(label = "Library Help Page - Not Implemented Yet",
-                                  command = self.do_nothing)
-        
-        self.lib_menu.add_separator()
         self.lib_menu.add_command(label = "New Library",
                                   command = self.new_lib_prompt)
         
-        self.lib_menu.add_command(label = "Lock Library - Not Implemented Yet",
-                                  command = self.do_nothing)
+        self.lib_menu.add_command(label = "Lock/unlock Library - Alpha",
+                                  command = self.check_edit_lock_status)
         
-        self.lib_menu.add_command(label = "Delete Library! - Not Implemented Yet",
-                                  command = self.do_nothing)
-        
-        self.lib_menu.add_separator()
-        
+        self.lib_menu.add_command(label = "Delete Library - Alpha",
+                                  command = self.delete_lib)
+
         self.pref_menu = tk.Menu(self.menu, tearoff = 0)
         self.menu.add_cascade(label = "Preferences", menu = self.pref_menu)
         self.pref_menu.add_command(label = "Mint Theme 1",
@@ -577,6 +657,14 @@ class MintApp(tk.Frame):
         for filename in self.list_of_all_filenames:
             self.lib_menu.add_command(label = "%s" % (filename),
                 command = lambda filename = filename: self.update_working_lib_keys(filename))
+        
+        self.site_menu = tk.Menu(self.menu, tearoff = 0)
+        self.menu.add_cascade(label = "Bookmarks", menu = self.site_menu)
+        with open("./SupportFiles/url_list", "r") as f:
+            url_list = json.load(f)
+            for site in url_list:
+                self.site_menu.add_command(label = "%s" % (site),
+                                          command = lambda url = url_list[site]: webbrowser.open_new(url))
     #~~~~~~~~~~~~~~~~~~~< Close >~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def close_program(self):     
         if self.current_working_lib == '':
