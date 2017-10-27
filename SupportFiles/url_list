@@ -1,0 +1,9 @@
+{
+"RMS" : "https://rmsprod.verizon.com/RMSPortal/RmsDesktop.portal",
+"CPSST" : "https://iwebfld.verizon.com/cpd/index.jsp",
+"vTicket" : "https://dssweb2.verizon.com/vTicket/Default.aspx",
+"VB Central" : "https://gsd.verizon.com/gsd/appmanager/eportal/gsd?_nfpb=true&_portlet.async=false&_pageLabel=new_incident_page",
+"Book A Space" : "https://bookaspace.verizon.com/virtualems/",
+"Data Transfer" : "http://tpap1lvdchw01v.verizon.com:8011/datatransfer/default.cfm",
+"ETrak" : "http://expressweb.verizon.com/Login?TXN=ShowLoginPage"
+}
