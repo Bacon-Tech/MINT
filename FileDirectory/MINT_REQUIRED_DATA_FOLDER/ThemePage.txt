@@ -1,0 +1,20 @@
+{
+"MINT Theme 1": [
+"#405952",
+"#112929",
+"#afa79d",
+"./Colors/theme1bg.png"
+],
+"MINT Theme 2": [
+"#0e3333",
+"#041616",
+"#dfab6f",
+"./Colors/theme2bg.png"
+],
+"MINT Theme 3": [
+"#adadad",
+"#f7fbfa",
+"black",
+"./Colors/theme3bg.png"
+]
+}

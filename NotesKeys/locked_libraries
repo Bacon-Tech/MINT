@@ -1,10 +1,6 @@
 {
-"mint_info": [
-"no",
-"password"
-],
-"mint_info_notes": [
-"no",
+"default_notes": [
+"yes",
 "password"
 ]
 }
