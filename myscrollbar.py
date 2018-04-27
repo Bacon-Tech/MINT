@@ -10,21 +10,29 @@ class MyScrollbar(tk.Canvas):
                                 'thumbtype':'rectangle',
                                 'thumbcolor':'#4ca6ff',
                                 }
-
+        
+##############################################################
+###### Define default height or width for x, y scrollbar #####
+##############################################################
         kwargs = self._sort_kwargs(kwargs)
         if self._scroll_kwargs['orient'] == 'vertical':
             if 'width' not in kwargs:
-                kwargs['width'] = 10
+                kwargs['width'] = 15
         elif self._scroll_kwargs['orient'] == 'horizontal':
             if 'height' not in kwargs:
-                kwargs['height'] = 10
+                kwargs['height'] = 15
         else:
             raise ValueError
+##############################################################
+################ Define default Border size ##################
+##############################################################
         if 'bd' not in kwargs:
             kwargs['bd'] = 0
         if 'highlightthickness' not in kwargs:
             kwargs['highlightthickness'] = 0
-
+##############################################################
+########## Initialize the creation of scroll bar #############
+##############################################################
         tk.Canvas.__init__(self, master, *args, **kwargs)
 
         self.elements = {   'button-1':None,

@@ -1,0 +1,3 @@
+This folder contains default content for MINT to operate porperly.
+Do not edit the files in this directory without know what you are doing.
+MINT can STOP WORKING!
